@@ -1,41 +1,76 @@
-import React from 'react'
-// import aframe from 'aframe'
+import AFRAME from 'aframe'
+import '../../libs/aframe-environment-component.min'
+import 'aframe-teleport-controls'
+import React, { useEffect } from 'react'
 // import styled from 'styled-components'
 import stats from './stats.json'
 
 const types = Object.keys(stats.inner)
+let handlers = {
+  onFileClick: evt => {
+    console.log('File Clicked: Empty handler', evt)
+  }
+}
+
+const COLORS = {
+  lighter: '#bfff00',
+  normal: '#5abf28'
+}
+
+AFRAME.registerComponent('on-file-click', {
+  init: function () {
+    this.el.addEventListener('click', event => {
+      handlers.onFileClick(event)
+    })
+
+    this.el.addEventListener('mouseenter', function () {
+      this.setAttribute('material', 'color', COLORS.lighter)
+    })
+
+    this.el.addEventListener('mouseleave', function () {
+      this.setAttribute('material', 'color', COLORS.normal)
+    })
+  }
+})
 
 function File ({ name, lines, x, y, z }) {
   return (
     <a-box
-      color='tomato'
+      on-file-click
+      color='#5abf28'
       depth='1'
       height={lines / 10}
       width='1'
       position={`${x} ${y} ${z}`}
+      name={name}
     />
   )
 }
 
-function Type ({ name }) {
+function Dir ({ name }) {
   const files = stats.inner[name].stats
   //   const [x, setX] = useState(0)
   //   const [y, setY] = useState(0)
   //   const [z, setZ] = useState(0)
   const margin = 1
+  let row = 0
 
   return (
     <React.Fragment>
       {files.map(({ name, lines }, index) => {
-        if (index < 10) {
+        if (index < 20) {
+          if (index % 10 === 0) {
+            row += 3
+          }
+
           return (
             <File
               key={name}
               name={name}
               lines={lines}
-              x={index * 1}
+              x={index * 2 - 20}
               y={0}
-              z={-4}
+              z={row}
             />
           )
         }
@@ -44,22 +79,37 @@ function Type ({ name }) {
   )
 }
 
-function Scene () {
+function Scene ({ setFileName }) {
+  useEffect(
+    () => {
+      handlers.onFileClick = event => {
+        setFileName(event.target.getAttribute('name'))
+      }
+    },
+    [handlers]
+  )
   return (
-    <div>
-      <a-scene>
-        <Type name='JavaScript' />
-        <a-entity
-          camera
-          look-controls
-          wasd-controls='acceleration:  200;  fly:  true'
+    <a-scene vr-mode-ui='enabled: true'>
+      <a-camera
+        wasd-controls='acceleration: 1000; fly: true'
+        position='0 10 10'
+      >
+        <a-cursor
+          cursor='fuse: true; fuseTimeout: 200'
+          position='0 0 -1'
+          geometry='primitive: ring; radiusInner: 0.025; radiusOuter: 0.03'
+          material='color: #fff; shader: flat'
         />
-        {/* {types.map(name => (
+      </a-camera>
+
+      <a-entity environment='preset:goldmine;dressingColor:#5abf28;playArea:1.2;dressingAmount:0' />
+
+      <Dir name='JavaScript' />
+
+      {/* {types.map(name => (
           <Type key={name} name={name} />
         ))} */}
-        <a-entity environment='preset: egypt' grid='crosses' />>
-      </a-scene>
-    </div>
+    </a-scene>
   )
 }
 
