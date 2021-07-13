@@ -5,6 +5,8 @@ import React, { useEffect } from 'react'
 // import styled from 'styled-components'
 import stats from './stats.json'
 
+import tokeiStat from '../../static/tokei-example.json'
+
 const types = Object.keys(stats.inner)
 let handlers = {
   onFileClick: evt => {
@@ -33,7 +35,7 @@ AFRAME.registerComponent('on-file-click', {
   }
 })
 
-function File ({ name, lines, x, y, z }) {
+function File({ name, lines, x, y, z }) {
   return (
     <a-box
       on-file-click
@@ -47,39 +49,49 @@ function File ({ name, lines, x, y, z }) {
   )
 }
 
-function Dir ({ name }) {
-  const files = stats.inner[name].stats
+function Dir({ name, x, y, z }) {
+  // const files = stats.inner[name].stats
   //   const [x, setX] = useState(0)
   //   const [y, setY] = useState(0)
   //   const [z, setZ] = useState(0)
   const margin = 1
   let row = 0
 
-  return (
-    <React.Fragment>
-      {files.map(({ name, lines }, index) => {
-        if (index < 20) {
-          if (index % 10 === 0) {
-            row += 3
-          }
+  return <a-box
+    on-file-click
+    color='#5abf28'
+    depth='1'
+    height='1'
+    width='1'
+    position={`${x} ${y} ${z}`}
+    name={name}
+  />
 
-          return (
-            <File
-              key={name}
-              name={name}
-              lines={lines}
-              x={index * 2 - 20}
-              y={0}
-              z={row}
-            />
-          )
-        }
-      })}
-    </React.Fragment>
-  )
+  // return (
+  //   <React.Fragment>
+  //     {files.map(({ name, lines }, index) => {
+  //       if (index < 20) {
+  //         if (index % 10 === 0) {
+  //           row += 3
+  //         }
+
+  //         return (
+  //           <File
+  //             key={name}
+  //             name={name}
+  //             lines={lines}
+  //             x={index * 2 - 20}
+  //             y={0}
+  //             z={row}
+  //           />
+  //         )
+  //       }
+  //     })}
+  //   </React.Fragment>
+  // )
 }
 
-function Scene ({ setFileName }) {
+function Scene({ setFileName }) {
   useEffect(
     () => {
       handlers.onFileClick = event => {
@@ -88,11 +100,15 @@ function Scene ({ setFileName }) {
     },
     [handlers]
   )
+  let x = 0
+  let y = 1
+  let z = 0
+
   return (
     <a-scene vr-mode-ui='enabled: true'>
       <a-camera
         wasd-controls='acceleration: 1000; fly: true'
-        position='0 10 10'
+        position='0 2 10'
       >
         <a-cursor
           cursor='fuse: true; fuseTimeout: 200'
@@ -104,11 +120,7 @@ function Scene ({ setFileName }) {
 
       <a-entity environment='preset:goldmine;dressingColor:#5abf28;playArea:1.2;dressingAmount:0' />
 
-      <Dir name='JavaScript' />
-
-      {/* {types.map(name => (
-          <Type key={name} name={name} />
-        ))} */}
+      {tokeiStat.directories.map((dir, index) => <Dir name={dir} x={index * 2} y={y} z={z} />)}
     </a-scene>
   )
 }
